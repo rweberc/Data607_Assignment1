@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Set up workspace
-```{r setup-workspace}
+```{r setup-workspace, echo=FALSE}
 rm(list=ls())
 
 library(dplyr)
@@ -29,7 +29,7 @@ setwd("/Users/ryanweber/Desktop/CUNY/Data 607 Db/Assignments/Week 1/Assignment1/
 
 ### Read in data set
 
-```{r }
+```{r read-dataset}
   dataset <- read.table("dataSet.txt",row.names=NULL,stringsAsFactors = FALSE, sep=",")
 ```
 
@@ -45,24 +45,41 @@ dictionary
 
 ## Apply column names from dictionary to dataset
 ```{r}
-colnames(dataset) <- gsub("-", "_", dictionary$field)
+colnames(dataset) <- gsub("-", "_", c("edibility", dictionary$field))
 ```
 
-
-Select several columns (not seeing where "Edible" is specified/derived)
-
-From the following values, I'm realizing the naming above is not in order...
-
-Renaming here:
+### Set poisonous as a factor
 ```{r}
-  dataset <- dataset %>% select(cap_shape, cap_surface)
+  dataset$edibility <- factor(dataset$edibility, levels=c("e", "p"), labels=c("edible", "poisonous"))
+  
+```
 
-  dataset$edible_poisonous <- factor(dataset$cap_shape, levels=c("e", "p"), labels=c("edible", "poisonous"))
-  
-  dataset$cap_shape <- factor(dataset$cap_surface, levels=c("b", "c", "x", "f", "k", "s"), 
-                                labels=c("bell", "conical", "convex", "flat", "knobbed", "sunked"))
-  
-  dataset
+### Parsing the rest of the columns using the data dictionary
+
+I couldn't see how to use the values column to create a factor.  Is there an "apply" way to do this?
+
+```{r}
+  for (i in 2:length(dataset)){
+    
+      # set up name value pairs for the factor
+      temp <- data.frame(val = unlist(strsplit(dictionary$values[i - 1], ",")), stringsAsFactors = FALSE)
+      temp2 <- as.data.frame(str_split_fixed(temp$val, "=", 2), stringsAsFactors = FALSE)
+      colnames(temp2) <- c("label", "level")
+    
+      dataset[, i] <- factor(dataset[, i], levels=temp2$level, labels=temp2$label)
+ 
+  }
+      
+  head(dataset)
+
+```
+
+### Select off the first 4 columns
+
+```{r}
+  dataset <- dataset[, 1:4]
+
+  head(dataset)
 
 ```
 
