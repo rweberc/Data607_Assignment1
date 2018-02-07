@@ -1,0 +1,68 @@
+---
+title: "Data607_Assignment1"
+author: "Ryan Weber"
+date: "February 6, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Set up workspace
+```{r setup-workspace}
+rm(list=ls())
+
+library(dplyr)
+library(stringr)
+
+setwd("/Users/ryanweber/Desktop/CUNY/Data 607 Db/Assignments/Week 1/Assignment1/Data607_Assignment1")
+```
+
+## Read in files
+
+### Read in data dictionary
+
+```{r read-dictionary}
+  dictionary <- read.table("data-dictionary.txt",row.names=NULL,stringsAsFactors = FALSE, sep=":")
+```
+
+### Read in data set
+
+```{r }
+  dataset <- read.table("dataSet.txt",row.names=NULL,stringsAsFactors = FALSE, sep=",")
+```
+
+## Attempt to parse data dictionary
+
+```{r}
+colnames(dictionary) <- c("field", "values")
+dictionary$field <- gsub("[0-9]+\\. ", "", dictionary$field)
+dictionary$field <- gsub(" ", "", dictionary$field)
+dictionary$values <- gsub(" ", "", dictionary$values)
+dictionary
+```
+
+## Apply column names from dictionary to dataset
+```{r}
+colnames(dataset) <- gsub("-", "_", dictionary$field)
+```
+
+
+Select several columns (not seeing where "Edible" is specified/derived)
+
+From the following values, I'm realizing the naming above is not in order...
+
+Renaming here:
+```{r}
+  dataset <- dataset %>% select(cap_shape, cap_surface)
+
+  dataset$edible_poisonous <- factor(dataset$cap_shape, levels=c("e", "p"), labels=c("edible", "poisonous"))
+  
+  dataset$cap_shape <- factor(dataset$cap_surface, levels=c("b", "c", "x", "f", "k", "s"), 
+                                labels=c("bell", "conical", "convex", "flat", "knobbed", "sunked"))
+  
+  dataset
+
+```
+
